@@ -23,7 +23,7 @@
   --lot-free-ink:#FFFFFF; --lot-book-ink:#FFFFFF; --lot-sold-ink:#262B29;
   --good:#0B7148; --good-soft:#DDF3E7; --warn:#935200; --warn-mark:#E39A2D; --warn-soft:#FCEFD8; --bad:#B0322A; --bad-mark:#DB4A3C; --bad-soft:#FBE3DF;
   --hatch:#CDD6D1;
-  --g-ground:#DFE6E2; --g-road:#C4CDC8; --g-park:#CBDFD0; --g-house:#FBFBF8; --g-fac:#D3DBD7; --g-water:#A9CFDE; --g-tree:#77AA8A; --g-trunk:#8D7C69;
+  --g-ground:#D5DED9; --g-road:#B9C4BE; --g-park:#C2D9C8; --g-house:#FBFBF8; --g-fac:#D3DBD7; --g-water:#A9CFDE; --g-tree:#77AA8A; --g-trunk:#8D7C69;
   --scrim:rgba(18,22,21,.4);
   --shadow:0 1px 2px rgba(18,22,21,.04),0 10px 30px rgba(18,22,21,.05);
   --lift:0 2px 8px rgba(18,22,21,.08);
@@ -600,7 +600,7 @@ a.kpi:hover{box-shadow:0 0 0 1px var(--line-strong),var(--shadow)}
 .kb{display:grid;grid-template-columns:repeat(5,minmax(246px,1fr));gap:14px}
 .kb-col{display:flex;flex-direction:column;gap:10px;min-height:260px;padding:12px;border-radius:var(--r-xl);background:color-mix(in srgb,var(--surface) 50%,transparent);border:1px solid var(--line)}
 .kb-col h3{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;padding:4px 6px 6px}
-.kb-col h3 small{margin-left:auto;font-weight:500;color:var(--ink-3);font-size:12.5px;font-variant-numeric:tabular-nums}
+.kb-col h3 small{margin-left:auto;font-weight:500;color:var(--ink-3);font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .kb-col h3 .cnt{background:var(--surface)}
 .lead{background:var(--surface);border:0;border-radius:var(--r-lg);padding:14px;text-align:left;display:flex;flex-direction:column;gap:9px;width:100%;color:var(--ink);box-shadow:var(--shadow)}
 .lead:hover{box-shadow:0 0 0 1px var(--line-strong),var(--shadow)}
@@ -803,6 +803,131 @@ a.kpi:hover{box-shadow:0 0 0 1px var(--line-strong),var(--shadow)}
 @keyframes vt-in{from{opacity:0;transform:translateY(8px)}}
 .shot{opacity:1;transition:opacity .35s}
 .shot:not([src]){opacity:0}
+
+/* ---------- depth and motion ----------
+   Elevation is a scale, not decoration. Wells (inputs, tracks, kanban columns) sit below the card surface; cards rest one step above the canvas; anything clickable lifts one more step on hover; floating layers (drawer, modal, toast, hero card) sit highest. Light comes from above, so highlights sit on top edges and shadows fall downward. Motion only confirms a change: a screen arriving, a selection moving, a value filling in. */
+:root{
+  --e-well:inset 0 1px 2px rgba(18,22,21,.07),inset 0 0 0 1px rgba(18,22,21,.045);
+  --e1:0 0 0 1px rgba(18,22,21,.035),0 1px 2px rgba(18,22,21,.04),0 4px 10px -4px rgba(18,22,21,.05),0 18px 40px -14px rgba(18,22,21,.11);
+  --e2:0 0 0 1px rgba(18,22,21,.05),0 2px 4px rgba(18,22,21,.05),0 16px 30px -10px rgba(18,22,21,.16),0 34px 64px -22px rgba(18,22,21,.20);
+  --edge:inset 0 0 0 1px rgba(18,22,21,.045);
+  --shadow:var(--e1);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --spring:cubic-bezier(.34,1.36,.64,1);
+}
+body{background:linear-gradient(180deg,#F1F5F3 0,var(--bg) 620px) no-repeat,var(--bg)}
+.chrome{box-shadow:0 10px 26px -20px rgba(18,22,21,.35)}
+
+/* buttons: raised, lift on hover, press on click */
+.btn{border-color:rgba(18,22,21,.14);box-shadow:0 1px 2px rgba(18,22,21,.06);transition:transform .25s var(--ease),box-shadow .25s var(--ease),background .2s,border-color .2s,color .2s}
+.btn:hover{transform:translateY(-1px);border-color:rgba(18,22,21,.28);box-shadow:0 2px 4px rgba(18,22,21,.06),0 10px 20px -8px rgba(18,22,21,.22)}
+.btn:active{transform:translateY(0) scale(.98);box-shadow:0 1px 2px rgba(18,22,21,.1)}
+.btn.primary{background:linear-gradient(180deg,#2E3532,#121615);border-color:#121615;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 1px 2px rgba(18,22,21,.3),0 8px 16px -6px rgba(18,22,21,.4)}
+.btn.primary:hover{background:linear-gradient(180deg,#363E3A,#191E1C);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 2px 4px rgba(18,22,21,.3),0 14px 26px -10px rgba(18,22,21,.5)}
+.btn.quiet,.btn.demo{box-shadow:none}
+.btn.quiet:hover{transform:none;box-shadow:none}
+.btn[disabled]{transform:none!important;box-shadow:none}
+.chipbtn{transition:background .2s,color .2s,box-shadow .25s var(--ease),transform .25s var(--ease)}
+.chipbtn:hover{background:var(--surface);box-shadow:var(--e1);transform:translateY(-1px)}
+.lotbtn{box-shadow:0 1px 2px rgba(18,22,21,.05);transition:border-color .2s,transform .25s var(--ease),box-shadow .25s var(--ease)}
+.lotbtn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -8px rgba(18,22,21,.25)}
+.go,.tool,.x,.heart{transition:background .2s,color .2s,border-color .2s,transform .3s var(--ease),box-shadow .3s var(--ease)}
+.go .ico{transition:transform .3s var(--ease)}
+.go:hover,.tool:hover,.x:hover{transform:translateY(-1px);box-shadow:0 10px 20px -8px rgba(18,22,21,.4)}
+.go:hover .ico{transform:translate(1px,-1px)}
+.go:active,.tool:active,.x:active,.heart:active{transform:scale(.94)}
+.tool{box-shadow:0 1px 2px rgba(18,22,21,.06)}
+.heart:hover{transform:translateY(-1px);box-shadow:0 10px 18px -8px rgba(18,22,21,.35)}
+.heart.pop .ico{animation:heart-pop .5s var(--spring)}
+@keyframes heart-pop{0%{transform:scale(.55)}55%{transform:scale(1.25)}100%{transform:scale(1)}}
+
+/* sliding indicator behind the active pill */
+[data-thumb]{position:relative;isolation:isolate}
+[data-thumb] > .thumb{position:absolute;left:0;top:0;z-index:-1;border-radius:var(--pill);background:linear-gradient(180deg,#2E3532,#121615);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 2px 6px rgba(18,22,21,.22),0 8px 16px -8px rgba(18,22,21,.35);pointer-events:none;transition:transform .45s var(--ease),width .45s var(--ease),height .45s var(--ease),opacity .2s}
+[data-thumb] > .on{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+
+/* wells sit below the surface */
+.seg-s,.seg2,.ask-in,.inp,.bar,.hb-t,.chat-in input{box-shadow:var(--e-well)}
+.pay{box-shadow:var(--e-well)}
+.sec-row .seg-s,.sec-tools .seg-s,.seg{box-shadow:var(--e1)}
+.kb-col{background:rgba(255,255,255,.38);border-color:transparent;box-shadow:var(--e-well)}
+.bl-t{box-shadow:var(--e-well)}
+.stage-view{box-shadow:var(--e-well)}
+.stage-view::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(18,22,21,.05),inset 0 26px 44px -36px rgba(18,22,21,.4),inset 0 -26px 44px -40px rgba(18,22,21,.3)}
+
+/* tiles inside cards get a defined edge */
+.dl div,.spec div,.stat,.appr,.mm-l div,.est > div,.cl-sum > div,.mandor-k > div,.rules > div,.legend span,.anoms li,.lockbox,.note,.verify,.ans-box,.kv,.sum{box-shadow:var(--edge)}
+.kv{box-shadow:none}
+.stat.mint,.price,.kpr-hero{background:linear-gradient(155deg,#E8F8EF 0%,#D3F0E0 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(14,132,85,.09)}
+.prio{background:linear-gradient(155deg,#E5F7ED,#D0EFDE);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 0 1px rgba(14,132,85,.08)}
+.ib{background:linear-gradient(180deg,#FFFFFF,#F2F5F3);border-color:rgba(18,22,21,.07);box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(18,22,21,.06),0 4px 10px -6px rgba(18,22,21,.15)}
+.av{background:linear-gradient(145deg,#F0F4F2,#DCE3DF);box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(18,22,21,.08)}
+.kdot{background:linear-gradient(160deg,#F5F8F6,#E4EAE7);box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(18,22,21,.06)}
+.kdot.bad{background:linear-gradient(160deg,#FDEDEA,#F8D6D1)}
+.ring .rf{filter:drop-shadow(0 2px 3px rgba(18,22,21,.14))}
+
+/* fills: a touch of light on top, a soft shadow below */
+.bar i{background:linear-gradient(180deg,#1DB077,var(--accent));box-shadow:0 1px 3px rgba(14,132,85,.35)}
+.bar i.warn{background:linear-gradient(180deg,#F0AE4C,var(--warn-mark));box-shadow:0 1px 3px rgba(227,154,45,.4)}
+.bar i.bad{background:linear-gradient(180deg,#E8695C,var(--bad-mark));box-shadow:0 1px 3px rgba(219,74,60,.4)}
+.pf-band .bar i{background:#3FD493;box-shadow:none}
+.hb-t i{background:linear-gradient(180deg,#1DB077,var(--accent))}
+.bl-t i{background:linear-gradient(180deg,#0E8455,#0A6A43);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 10px 18px -10px rgba(11,113,72,.6)}
+.bl.warn .bl-t i{background:linear-gradient(180deg,#EDA843,#D98A1E);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 18px -10px rgba(217,138,30,.6)}
+
+/* interactive cards lift; static cards stay put */
+.lcard{transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.lcard:hover{transform:translateY(-4px);box-shadow:var(--e2)}
+a.kpi,.lead,.prio-i{transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+a.kpi:hover,.lead:hover,.prio-i:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+.prio-i{box-shadow:var(--e1)}
+.lead.new{box-shadow:0 0 0 2px var(--accent),var(--e1)}
+.lead.new:hover{box-shadow:0 0 0 2px var(--accent),var(--e2)}
+.tbl td{transition:background .2s}
+.lc-shot::after,.unit-shot::after,.hero-r::after,.pf::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(18,22,21,.05),inset 0 -50px 70px -60px rgba(18,22,21,.3)}
+.hero-card{z-index:2;box-shadow:var(--pop)}
+.hero-cap,.unit-cap{z-index:2}
+.compass,.g3tip{box-shadow:var(--e2)}
+.g3lab{box-shadow:0 1px 2px rgba(18,22,21,.08),0 6px 14px -6px rgba(18,22,21,.25)}
+
+/* chart depth */
+.ac-a{filter:drop-shadow(0 6px 8px rgba(22,160,107,.28))}
+.mk{transition:transform .4s var(--ease)}
+.mk-d{filter:drop-shadow(0 2px 4px rgba(18,22,21,.3))}
+.mk-t{filter:drop-shadow(0 6px 10px rgba(18,22,21,.28))}
+
+/* overlays */
+.ov,.mwrap{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.modal{animation:pop-in .36s var(--spring)}
+@keyframes pop-in{from{opacity:0;transform:translateY(12px) scale(.97)}}
+.drawer{animation:slide .38s var(--ease)}
+.toast{animation:toast-in .42s var(--spring)}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,14px) scale(.96)}}
+.chat{animation:pop-in .32s var(--spring);transform-origin:100% 100%}
+
+/* screen arrival: pieces rise in order, values and fills grow in */
+.cs-main.enter,.pw.enter{animation:none}
+@keyframes rise-in{from{opacity:0;transform:translateY(14px)}}
+.enter .head,.enter .pw-nav,.enter .hero-l > div,.enter .hero-r{animation:rise-in .6s var(--ease) both}
+.enter .hero-r{animation-delay:.08s}
+.enter :is(.grid,.tiles,.kb,.hero-stats,.prio-l) > *,.enter > .card,.enter > .stage,.enter > .kb-wrap{animation:rise-in .6s var(--ease) both;animation-delay:calc(var(--sd,1) * 55ms + 60ms)}
+.enter :is(.grid,.tiles,.kb,.hero-stats,.prio-l) > :nth-child(2){--sd:2} .enter :is(.grid,.tiles,.kb,.hero-stats,.prio-l) > :nth-child(3){--sd:3}
+.enter :is(.grid,.tiles,.kb,.hero-stats,.prio-l) > :nth-child(4){--sd:4} .enter :is(.grid,.tiles,.kb,.hero-stats,.prio-l) > :nth-child(5){--sd:5}
+.enter :is(.grid,.tiles,.kb,.hero-stats,.prio-l) > :nth-child(6){--sd:6} .enter :is(.grid,.tiles,.kb,.hero-stats,.prio-l) > :nth-child(n+7){--sd:7}
+.enter > .stage{--sd:3} .enter > .kb-wrap{--sd:3}
+@keyframes ring-in{from{stroke-dasharray:0 100}}
+@keyframes grow-x{from{width:0}}
+@keyframes grow-y{from{height:0}}
+@keyframes draw{from{stroke-dashoffset:1400}}
+@keyframes fade-in{from{opacity:0}}
+.enter .ring .rf{animation:ring-in 1.2s var(--ease) .25s both}
+.enter .bar i,.enter .hb-t i{animation:grow-x 1s var(--ease) .3s both}
+.enter .bl-t i{animation:grow-y 1.1s var(--ease) .35s both}
+.enter .ac-a{stroke-dasharray:1400;animation:draw 1.4s var(--ease) .25s both}
+.enter .ac-area{animation:fade-in .9s ease .55s both}
+.enter .mk{animation:fade-in .4s ease 1.3s both}
+.rv{opacity:0;transform:translateY(18px)}
+.rv-in{animation:rise-in .75s var(--ease) both;animation-delay:calc(var(--rd,0) * 70ms)}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -813,7 +938,7 @@ a.kpi:hover{box-shadow:0 0 0 1px var(--line-strong),var(--shadow)}
 <header class="chrome">
   <div class="chrome-in">
     <div class="who">Arunika Property Suite<span>Prototype, semua data contoh</span></div>
-    <nav class="seg" aria-label="Pilih tampilan">
+    <nav class="seg" aria-label="Pilih tampilan" data-thumb="chrome">
       <a href="#web" data-k="web">Web publik</a>
       <a href="#dashboard" data-k="console">Console internal</a>
     </nav>
@@ -1194,7 +1319,7 @@ const G3 = (() => {
     controls.enableDamping = true; controls.dampingFactor = 0.09; controls.enablePan = false; controls.enableZoom = false;
     controls.minPolarAngle = 0.12; controls.maxPolarAngle = 1.2; controls.rotateSpeed = 0.55;
     if (coarse) { controls.enabled = false; el.style.touchAction = 'pan-y'; }
-    controls.addEventListener('change', kick);
+    controls.addEventListener('change', kick); scene.fog = new THREE.Fog(0xE3E9E6, 210, 440);
     hemi = new THREE.HemisphereLight(0xffffff, 0x9aa8a1, 0.5); scene.add(hemi);
     sunL = new THREE.DirectionalLight(0xffffff, 1); sunL.castShadow = true; sunL.shadow.mapSize.set(2048, 2048);
     Object.assign(sunL.shadow.camera, {left: -64, right: 64, top: 44, bottom: -44, near: 10, far: 420}); sunL.shadow.camera.updateProjectionMatrix();
@@ -1245,7 +1370,7 @@ const G3 = (() => {
       const o = lotObj[l.id];
       if (o.status !== l.status) {
         const from = o.tileM.color.clone(), to = col(STV[l.status]); o.status = l.status;
-        tween(900, e => { o.tileM.color.copy(from).lerp(to, e); o.roofM.color.copy(from).lerp(to, e); o.g.position.y = Math.sin(e * Math.PI) * 0.9; });
+        o.bouncing = true; tween(900, e => { o.tileM.color.copy(from).lerp(to, e); o.roofM.color.copy(from).lerp(to, e); o.g.position.y = Math.sin(e * Math.PI) * 0.9; if (e >= 1) o.bouncing = false; });
       }
       paint(l.id);
     });
@@ -1258,7 +1383,7 @@ const G3 = (() => {
     const h = (t - 6) / 12 * Math.PI; const k = Math.max(0, Math.sin(h)); const R = 150;
     sunL.position.set(Math.cos(h) * R, 9 + Math.sin(h) * R * 0.9, -R * 0.22); sunL.target.position.set(0, 0, 0);
     sunL.color.copy(new THREE.Color(0xffc896)).lerp(new THREE.Color(0xfffaf0), Math.min(1, k * 1.5));
-    sunL.intensity = 0.62 + 0.5 * k; hemi.intensity = 0.56 + 0.2 * k;
+    sunL.intensity = 0.52 + 0.46 * k; hemi.intensity = 0.5 + 0.18 * k;
     kick();
   }
   function orbit(dAz, rad) {
@@ -1282,11 +1407,13 @@ const G3 = (() => {
     }
     if (compassEl && compassEl.isConnected) compassEl.style.transform = `rotate(${(controls.getAzimuthalAngle() * 180 / Math.PI).toFixed(1)}deg)`;
   }
+  /* Hovered and selected houses rise a little, so the pointer and the selection read in depth, not only in color. */
+  function stepLift() { let moving = false; for (const id in lotObj) { const o = lotObj[id]; if (o.bouncing) { moving = true; continue; } const t = id === hoverId || id === selId ? 0.32 : 0; const d = t - o.g.position.y; if (reduceMotion || Math.abs(d) < 0.003) { o.g.position.y = t; continue; } o.g.position.y += d * 0.2; moving = true; } return moving; }
   function kick() { lastKick = performance.now(); if (!raf && ready) raf = requestAnimationFrame(loop); }
   function loop(now) {
     raf = 0; if (!host || !host.isConnected || document.hidden) return;
-    stepTweens(now); controls.update(); renderer.render(scene, camera); place();
-    if (tweens.length || now - lastKick < 1300) raf = requestAnimationFrame(loop);
+    stepTweens(now); const lifting = stepLift(); controls.update(); renderer.render(scene, camera); place();
+    if (tweens.length || lifting || now - lastKick < 1300) raf = requestAnimationFrame(loop);
   }
   function mount(hostEl, labEl, cmp, pickFn) {
     if (!init()) return false;
@@ -1407,8 +1534,8 @@ const SHOT = (() => {
         const p = parse(k); if (grp) { scene.remove(grp); dispose(grp); }
         grp = maket(p.tipe, p.st); scene.add(grp);
         r.setSize(p.w, p.h, false); cam.aspect = p.w / p.h; cam.fov = p.hero ? 29 : 25; cam.updateProjectionMatrix();
-        const tg = new THREE.Vector3(p.hero ? 0.2 : 0.3, p.hero ? 1.3 : p.tall ? 2.6 : 0.9, -0.2); const dir = new THREE.Vector3(-0.5, p.hero ? 0.36 : 0.42, 0.78).normalize();
-        cam.position.copy(tg).addScaledVector(dir, p.hero ? 32 : p.tall ? 47 : 34.5); cam.lookAt(tg);
+        const tg = new THREE.Vector3(p.hero ? 0.6 : p.tall ? 0.9 : 0.3, p.hero ? 1.3 : p.tall ? 3.2 : 0.9, -0.2); const dir = new THREE.Vector3(-0.5, p.hero ? 0.36 : 0.42, 0.78).normalize();
+        cam.position.copy(tg).addScaledVector(dir, p.hero ? 35 : p.tall ? 58 : 34.5); cam.lookAt(tg);
         r.render(scene, cam); cache[k] = r.domElement.toDataURL('image/jpeg', 0.9);
       } catch (e) { cache[k] = svgHouse(k); }
       fill(); setTimeout(step, 16);
@@ -1446,7 +1573,7 @@ ${g}
 function mapStage(mode) {
   const pub = mode === 'pub'; const c = counts(); const can3d = G3.available(); const is3d = can3d && S.ui.view3d[mode];
   const t = S.ui.sunT; const hh = Math.floor(t), mm = Math.round((t - hh) * 60);
-  const seg = can3d ? `<div class="seg-s" role="group" aria-label="Mode peta"><button class="${is3d ? 'on' : ''}" data-act="view3d" data-m="${mode}" data-v="1" aria-pressed="${is3d}">Peta 3D</button><button class="${!is3d ? 'on' : ''}" data-act="view3d" data-m="${mode}" data-v="0" aria-pressed="${!is3d}">Denah 2D</button></div>` : '<span class="fine">Denah kavling</span>';
+  const seg = can3d ? `<div class="seg-s" role="group" aria-label="Mode peta" data-thumb="mode-${mode}"><button class="${is3d ? 'on' : ''}" data-act="view3d" data-m="${mode}" data-v="1" aria-pressed="${is3d}">Peta 3D</button><button class="${!is3d ? 'on' : ''}" data-act="view3d" data-m="${mode}" data-v="0" aria-pressed="${!is3d}">Denah 2D</button></div>` : '<span class="fine">Denah kavling</span>';
   const toolsR = is3d ? `<div class="tools-r"><button class="tool" data-act="g3rot" data-v="1" aria-label="Putar peta ke kiri" title="Putar ke kiri">${I.rotL}</button><button class="tool" data-act="g3rot" data-v="-1" aria-label="Putar peta ke kanan" title="Putar ke kanan">${I.rotR}</button><button class="tool" data-act="g3zoom" data-v="0.8" aria-label="Perbesar" title="Perbesar">+</button><button class="tool" data-act="g3zoom" data-v="1.25" aria-label="Perkecil" title="Perkecil">−</button><button class="tool" data-act="g3reset" aria-label="Kembali ke sudut awal" title="Sudut awal">${I.fit}</button></div>` : '';
   const hint = `<span class="stage-hint">${is3d ? (coarsePtr ? 'Ketuk rumah untuk detail, putar dengan tombol.' : 'Seret untuk memutar, klik rumah untuk detail.') : 'Pilih kavling di denah, bisa juga dengan Tab dan Enter.'}</span>`;
   return `<div class="stage" id="stage-${mode}">
@@ -1490,7 +1617,7 @@ function refreshSel(m) {
 }
 
 /* ================= WEB PUBLIK ================= */
-const tipePills = () => `<div class="seg-s" role="group" aria-label="Tandai tipe rumah">${['all', 36, 45, 54].map(t => { const on = String(S.ui.pubTipe) === String(t); return `<button class="${on ? 'on' : ''}" data-act="pubTipe" data-v="${t}" aria-pressed="${on}">${t === 'all' ? 'Semua tipe' : 'Tipe ' + t}</button>`; }).join('')}</div>`;
+const tipePills = (k = 'map') => `<div class="seg-s" role="group" aria-label="Tandai tipe rumah" data-thumb="tipe-${k}">${['all', 36, 45, 54].map(t => { const on = String(S.ui.pubTipe) === String(t); return `<button class="${on ? 'on' : ''}" data-act="pubTipe" data-v="${t}" aria-pressed="${on}">${t === 'all' ? 'Semua tipe' : 'Tipe ' + t}</button>`; }).join('')}</div>`;
 function renderWeb() {
   const c = counts(); const T54 = S.lots.find(l => l.tipe === 54 && l.status === 'free' && l.hook) || S.lots.find(l => l.tipe === 54 && l.status === 'free');
   const minH = Math.min(...Object.values(TYPES).map(t => t.harga));
@@ -1560,7 +1687,7 @@ function listingSection() {
   const empty = sv ? 'Belum ada kavling yang disimpan. Ketuk ikon hati di kartu unit atau di detail kavling untuk menyimpannya.' : 'Tipe ini sudah habis. Coba tipe lain.';
   return `<section class="pw-sec" id="pw-units"><div class="wrap">
     <div class="sec-row"><div><h2 class="sec-t">Unit tersedia <span>${sv ? 'yang Anda simpan' : 'pilihan dari peta'}</span></h2><p class="sec-p">${sv ? 'Simpanan ini hanya ada di perangkat Anda selama halaman terbuka.' : 'Ketuk kartu untuk melihat kavlingnya di peta. Cicilan dihitung dengan DP 20%, tenor 20 tahun, bunga promo Bank Mitra A.'}</p></div>
-      <div class="sec-tools">${sv ? '' : tipePills()}<button class="btn ${sv ? 'primary' : ''}" data-act="listSaved" aria-pressed="${sv}">${I.heart}${sv ? 'Tampilkan semua unit' : 'Disimpan'} <span class="num">${sv ? '' : saved.length}</span></button></div></div>
+      <div class="sec-tools">${sv ? '' : tipePills('list')}<button class="btn ${sv ? 'primary' : ''}" data-act="listSaved" aria-pressed="${sv}">${I.heart}${sv ? 'Tampilkan semua unit' : 'Disimpan'} <span class="num">${sv ? '' : saved.length}</span></button></div></div>
     ${show.length ? `<div class="listing">${cards}</div>` : `<div class="card"><p class="empty">${empty}</p></div>`}
     ${!sv && ls.length > show.length ? `<p class="fine list-more">Menampilkan ${show.length} dari ${ls.length} kavling tersedia. Sisanya bisa dipilih langsung di <button class="lnk" data-act="scroll" data-to="pw-map">peta kavling</button>.</p>` : ''}
   </div></section>`;
@@ -1603,7 +1730,7 @@ function typesSection() {
   const t = S.ui.typeTab; const T = TYPES[t]; const avail = S.lots.filter(l => l.tipe === t && l.status === 'free').length;
   return `<section class="pw-sec" id="pw-types"><div class="wrap">
     <div class="sec-row"><div><h2 class="sec-t">Tipe rumah <span>tiga ukuran, satu struktur</span></h2><p class="sec-p">Pondasi batu kali dengan sloof beton, dinding bata merah plester aci, rangka atap baja ringan, dan kusen aluminium di semua tipe.</p></div>
-      <div class="seg-s" role="tablist" aria-label="Pilih tipe rumah">${[36, 45, 54].map(x => `<button role="tab" id="tab-${x}" aria-selected="${x === t}" aria-controls="typePanel" tabindex="${x === t ? 0 : -1}" class="${x === t ? 'on' : ''}" data-act="typeTab" data-v="${x}">Tipe ${x}</button>`).join('')}</div></div>
+      <div class="seg-s" role="tablist" aria-label="Pilih tipe rumah" data-thumb="types">${[36, 45, 54].map(x => `<button role="tab" id="tab-${x}" aria-selected="${x === t}" aria-controls="typePanel" tabindex="${x === t ? 0 : -1}" class="${x === t ? 'on' : ''}" data-act="typeTab" data-v="${x}">Tipe ${x}</button>`).join('')}</div></div>
     <div class="types-grid" id="typePanel" role="tabpanel" aria-labelledby="tab-${t}">
       <div class="card type-card">
         <div class="unit-shot">${SHOT.img(t + '-free', 'Maket 3D rumah tipe ' + t)}<span class="tag white unit-cap">Maket 3D tipe ${t}/${T.lt}</span></div>
@@ -1623,7 +1750,7 @@ function kprForm() {
     ${cardH('calc', 'Atur simulasi')}
     <div class="field"><label for="kLot">Kavling</label><select id="kLot" class="inp">${opts}</select></div>
     <div class="field"><label for="kDp">Uang muka <span id="kDpV">${S.kpr.dp}%</span></label><input class="rng" type="range" id="kDp" min="10" max="50" step="5" value="${S.kpr.dp}"><div class="rng-l"><span>10%</span><span>50%</span></div></div>
-    <div class="field"><span class="lbl" id="tenorL">Tenor</span><div class="seg2" role="group" aria-labelledby="tenorL">${[10, 15, 20, 25].map(n => `<button type="button" class="${S.kpr.tenor === n ? 'on' : ''}" data-act="kTenor" data-v="${n}" aria-pressed="${S.kpr.tenor === n}">${n} tahun</button>`).join('')}</div></div>
+    <div class="field"><span class="lbl" id="tenorL">Tenor</span><div class="seg2" role="group" aria-labelledby="tenorL" data-thumb="tenor">${[10, 15, 20, 25].map(n => `<button type="button" class="${S.kpr.tenor === n ? 'on' : ''}" data-act="kTenor" data-v="${n}" aria-pressed="${S.kpr.tenor === n}">${n} tahun</button>`).join('')}</div></div>
     <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="lbl" style="font-size:13.5px;font-weight:600;padding:0;margin-bottom:8px">Bank</legend><div class="banks">${Object.entries(BANKS).map(([k, b]) => `<label class="bank ${S.kpr.bank === k ? 'on' : ''}"><input type="radio" name="kBank" value="${k}" ${S.kpr.bank === k ? 'checked' : ''}><b>${b.name}</b><span>${b.label}</span></label>`).join('')}</div></fieldset>
   </form>`;
 }
@@ -1653,7 +1780,7 @@ function renderConsole(view) {
   return `<div class="cs">
     <header class="cs-top">
       <div class="cs-brand"><b>Arunika Residence</b><span>PT Arunika Land, 60 kavling</span></div>
-      <nav class="cs-nav" aria-label="Modul">${nav.map(([k, t, b]) => `<a href="#${k}" class="${view === k ? 'on' : ''}" ${view === k ? 'aria-current="page"' : ''}>${t}${b}</a>`).join('')}</nav>
+      <nav class="cs-nav" aria-label="Modul" data-thumb="csnav">${nav.map(([k, t, b]) => `<a href="#${k}" class="${view === k ? 'on' : ''}" ${view === k ? 'aria-current="page"' : ''}>${t}${b}</a>`).join('')}</nav>
       ${syncChip()}
     </header>
     <main class="cs-main">${V[view]()}</main>
@@ -1681,23 +1808,24 @@ function areaChart({cats, a, b, max, ticks, fmt, hi, label, mtdLast}) {
   const x = i => L + pw * i / (n - 1); const y = v => T + ph - v / max * ph;
   const P = arr => arr.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
   const sr = cats.map((c, i) => `${MON[c] || c} masuk ${fmt(a[i])}, keluar ${fmt(b[i])}`).join('; ');
-  let s = `<svg class="chart ac" viewBox="0 0 ${W} ${H}" data-w="${W}" data-hi="${hi}" role="img" aria-label="${esc(label + '. ' + sr)}"><defs><pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" class="ac-bg"/><line x1="0" y1="0" x2="0" y2="6" class="ac-hl"/></pattern></defs>`;
+  let s = `<svg class="chart ac" viewBox="0 0 ${W} ${H}" data-w="${W}" data-b="${T + ph}" data-hi="${hi}" role="img" aria-label="${esc(label + '. ' + sr)}"><defs><pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" class="ac-bg"/><line x1="0" y1="0" x2="0" y2="6" class="ac-hl"/></pattern></defs>`;
   ticks.forEach(t => { s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text class="tick" x="${L - 10}" y="${y(t) + 4}" text-anchor="end">${fmt(t)}</text>`; });
-  s += `<path d="M${x(0)},${y(0)} L${P(a).join(' L')} L${x(n - 1)},${y(0)} Z" fill="url(#${id})"/>`;
+  s += `<path class="ac-area" d="M${x(0)},${y(0)} L${P(a).join(' L')} L${x(n - 1)},${y(0)} Z" fill="url(#${id})"/>`;
   s += `<polyline class="ac-b" points="${P(b).join(' ')}"/><polyline class="ac-a" points="${P(a).join(' ')}"/>`;
   cats.forEach((c, i) => { s += `<text class="tick" x="${x(i)}" y="${H - 8}" text-anchor="middle">${c}${mtdLast && i === n - 1 ? '*' : ''}</text>`; });
-  s += `<g class="mk" aria-hidden="true"><line class="mk-l" x1="${x(hi)}" x2="${x(hi)}" y1="${y(a[hi])}" y2="${T + ph}"/><g class="mk-t"><rect rx="13" height="26" width="0"/><text text-anchor="middle"></text></g><circle class="mk-d" cx="${x(hi)}" cy="${y(a[hi])}" r="6"/></g>`;
+  s += `<g class="mk" aria-hidden="true" style="transform:translate(${x(hi).toFixed(1)}px,${y(a[hi]).toFixed(1)}px)"><line class="mk-l" x1="0" x2="0" y1="0" y2="${(T + ph - y(a[hi])).toFixed(1)}"/><g class="mk-t"><rect rx="13" height="26" width="0"/><text text-anchor="middle"></text></g><circle class="mk-d" cx="0" cy="0" r="6"/></g>`;
   const cw = pw / (n - 1);
   cats.forEach((c, i) => { const x0 = i === 0 ? 0 : x(i) - cw / 2, x1 = i === n - 1 ? W : x(i) + cw / 2; s += `<rect class="ac-hit" aria-hidden="true" x="${x0.toFixed(1)}" y="0" width="${(x1 - x0).toFixed(1)}" height="${T + ph}" data-x="${x(i).toFixed(1)}" data-y="${y(a[i]).toFixed(1)}" data-l="${esc((MON[c] || c) + '  ' + fmt(a[i]))}"/>`; });
   return s + '</svg>';
 }
+/* The marker group glides between months (CSS transform transition); the tooltip is positioned relative to it and kept inside the chart. */
 function acFocus(h) {
-  const svg = h.closest('svg'); if (!svg) return; const W = +svg.dataset.w; const x = +h.dataset.x, y = +h.dataset.y;
-  const l = svg.querySelector('.mk-l'), d = svg.querySelector('.mk-d'), t = svg.querySelector('.mk-t text'), r = svg.querySelector('.mk-t rect');
-  l.setAttribute('x1', x); l.setAttribute('x2', x); l.setAttribute('y1', y); d.setAttribute('cx', x); d.setAttribute('cy', y);
+  const svg = h.closest('svg'); if (!svg) return; const W = +svg.dataset.w, Bm = +svg.dataset.b; const x = +h.dataset.x, y = +h.dataset.y;
+  const g = svg.querySelector('.mk'), l = g.querySelector('.mk-l'), t = g.querySelector('.mk-t text'), r = g.querySelector('.mk-t rect');
+  g.style.transform = `translate(${x}px,${y}px)`; l.setAttribute('y2', (Bm - y).toFixed(1));
   t.textContent = h.dataset.l; let w = 0; try { w = t.getComputedTextLength(); } catch (e) { w = 0; } if (!w) w = h.dataset.l.length * 7.2; w += 26;
-  const rx = clamp(x - w / 2, 2, W - w - 2); r.setAttribute('x', rx.toFixed(1)); r.setAttribute('y', (y - 42).toFixed(1)); r.setAttribute('width', w.toFixed(1));
-  t.setAttribute('x', (rx + w / 2).toFixed(1)); t.setAttribute('y', (y - 24.5).toFixed(1));
+  const rx = clamp(x - w / 2, 2, W - w - 2) - x; r.setAttribute('x', rx.toFixed(1)); r.setAttribute('y', '-42'); r.setAttribute('width', w.toFixed(1));
+  t.setAttribute('x', (rx + w / 2).toFixed(1)); t.setAttribute('y', '-24.5');
 }
 function initCharts() { document.querySelectorAll('svg.ac').forEach(s => { const h = s.querySelectorAll('.ac-hit')[+s.dataset.hi]; if (h) acFocus(h); }); }
 /* Vertical bullets per cluster: hatched track = full RAB, solid fill = spent, black line = physical progress. */
@@ -2161,12 +2289,52 @@ function refreshWeb() {
   const u = $('#pw-units'); if (u) u.outerHTML = listingSection();
   const p = $('#unitPanel'); if (p) p.innerHTML = pubUnitPanel();
   const n = $('#savedN'); if (n) n.textContent = S.ui.saved.length;
-  SHOT.fill();
+  SHOT.fill(); thumbs();
+}
+/* Sliding indicator: each [data-thumb] group keeps a dark pill behind its active option. Groups are often re-rendered, so the last position is remembered per key and the new pill starts there before gliding to the new option. */
+const THUMB = {};
+function thumbs() {
+  document.querySelectorAll('[data-thumb]').forEach(c => {
+    const on = c.querySelector(':scope > .on'); let t = c.querySelector(':scope > .thumb');
+    if (!on || !on.offsetWidth) { if (t) t.style.opacity = '0'; return; }
+    if (!t) { t = document.createElement('span'); t.className = 'thumb'; t.setAttribute('aria-hidden', 'true'); c.prepend(t); }
+    const r = {x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight}; const key = c.dataset.thumb; const prev = THUMB[key];
+    const put = q => { t.style.transform = `translate(${q.x}px,${q.y}px)`; t.style.width = q.w + 'px'; t.style.height = q.h + 'px'; };
+    if (!t.dataset.ready) { t.style.transition = 'none'; put(prev && !reduceMotion ? prev : r); void t.offsetWidth; t.style.transition = ''; t.dataset.ready = '1'; }
+    put(r); t.style.opacity = ''; THUMB[key] = r;
+  });
+}
+/* Count-up for headline numbers when a screen arrives. Keeps the Indonesian number format and restores the exact original text at the end. */
+function countUp(root) {
+  if (reduceMotion || !root) return;
+  root.querySelectorAll('.kpi-t b, .stat b, .mm-n b, .pf-n b, .tile-t b, .hs dd, .cl-sum b').forEach(el => {
+    const tn = [...el.childNodes].find(n => n.nodeType === 3 && /\d/.test(n.textContent)); if (!tn) return;
+    const txt = tn.textContent; const m = txt.match(/\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/); if (!m) return;
+    const raw = m[0]; const dec = (raw.split(',')[1] || '').length; const val = parseFloat(raw.replace(/\./g, '').replace(',', '.')); if (!isFinite(val) || val === 0) return;
+    const pre = txt.slice(0, m.index), post = txt.slice(m.index + raw.length); const fmt = v => pre + v.toLocaleString('id-ID', {minimumFractionDigits: dec, maximumFractionDigits: dec}) + post;
+    const t0 = performance.now() + 150, dur = 950; tn.textContent = fmt(0);
+    const step = now => { if (!tn.isConnected) return; const p = clamp((now - t0) / dur, 0, 1); const e = 1 - Math.pow(1 - p, 3); if (p < 1) { tn.textContent = fmt(val * e); requestAnimationFrame(step); } else tn.textContent = txt; };
+    requestAnimationFrame(step);
+    setTimeout(() => { if (tn.isConnected) tn.textContent = txt; }, dur + 1200);
+  });
+}
+/* Web publik: sections below the fold rise in once when scrolled into view. Only on arrival, never after an in-page update, and content stays visible if the observer is unavailable. */
+let revealIO = null;
+function reveal(root) {
+  if (revealIO) { revealIO.disconnect(); revealIO = null; }
+  if (reduceMotion || !root || !('IntersectionObserver' in window)) return;
+  revealIO = new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting) return; en.target.classList.remove('rv'); en.target.classList.add('rv-in'); revealIO.unobserve(en.target); }), {rootMargin: '0px 0px -6% 0px'});
+  root.querySelectorAll('.sec-row, .stage, .listing > *, .types-grid > *, .kpr-grid > *').forEach(el => {
+    if (el.getBoundingClientRect().top < innerHeight) return;
+    const p = el.parentElement; el.style.setProperty('--rd', p && (p.classList.contains('listing') || p.classList.contains('types-grid') || p.classList.contains('kpr-grid')) ? [...p.children].indexOf(el) % 4 : 0);
+    el.classList.add('rv'); revealIO.observe(el);
+  });
 }
 function update() {
   const v = route(); const same = v === lastView; const y = window.scrollY;
   $('#app').innerHTML = v === 'web' ? renderWeb() : renderConsole(v);
-  if (lastView && !same) { const el = v === 'web' ? $('#app .pw') : $('#app .cs-main'); if (el) el.classList.add('enter'); }
+  const root = v === 'web' ? $('#app .pw') : $('#app .cs-main');
+  if (!same && root && !reduceMotion) root.classList.add('enter');
   document.querySelectorAll('.seg a').forEach(a => { const on = (a.dataset.k === 'web') === (v === 'web'); a.classList.toggle('on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   renderChat(); renderOverlay();
   const nav = $('.cs-nav'), onA = $('.cs-nav a.on');
@@ -2174,7 +2342,8 @@ function update() {
   if (S.ui.scrollTo) { const t = document.getElementById(S.ui.scrollTo); S.ui.scrollTo = null; if (t) t.scrollIntoView({behavior: same ? smooth : 'auto', block: 'start'}); }
   else if (same) window.scrollTo(0, y); else window.scrollTo(0, 0);
   lastView = v;
-  mountStage(v); SHOT.fill(); initCharts();
+  mountStage(v); SHOT.fill(); initCharts(); thumbs();
+  if (!same) { countUp(root); if (v === 'web') reveal(root); else reveal(null); }
   if (S.ui.flash) { const f = S.ui.flash; setTimeout(() => { if (S.ui.flash === f) S.ui.flash = null; }, 3500); }
 }
 window.addEventListener('hashchange', update);
@@ -2187,7 +2356,7 @@ const A = {
     const id = el.dataset.id; const a = S.ui.saved; const i = a.indexOf(id); const inUnits = !!el.closest('#pw-units');
     if (i < 0) a.push(id); else a.splice(i, 1);
     refreshWeb();
-    const b = document.querySelector(`${inUnits ? '#pw-units' : '#unitPanel'} [data-act="save"][data-id="${id}"]`); if (b) b.focus();
+    const b = document.querySelector(`${inUnits ? '#pw-units' : '#unitPanel'} [data-act="save"][data-id="${id}"]`); if (b) { b.focus(); if (i < 0) b.classList.add('pop'); }
     if (i < 0) toast(`Kavling ${id} disimpan. Daftarnya ada di tombol Disimpan.`);
   },
   listSaved: () => { S.ui.listSaved = !S.ui.listSaved; refreshWeb(); const b = $('#pw-units [data-act="listSaved"]'); if (b) b.focus(); },
@@ -2201,9 +2370,9 @@ const A = {
   pubLot: el => { S.ui.pubSel = el.dataset.id; refreshSel('pub'); if (window.innerWidth < 1060) { const p = $('#unitPanel'); if (p && el.closest) p.scrollIntoView({behavior: smooth, block: 'nearest'}); } },
   pubTipe: el => { S.ui.pubTipe = el.dataset.v === 'all' ? 'all' : +el.dataset.v; update(); },
   pubTipeGo: el => { const t = +el.dataset.v; S.ui.pubTipe = t; const f = S.lots.find(l => l.tipe === t && l.status === 'free'); if (f) S.ui.pubSel = f.id; S.ui.scrollTo = 'pw-map'; update(); },
-  typeTab: el => { S.ui.typeTab = +el.dataset.v; const sec = $('#pw-types'); if (sec) { sec.outerHTML = typesSection(); const b = $(`#tab-${S.ui.typeTab}`); if (b) b.focus(); SHOT.fill(); } },
+  typeTab: el => { S.ui.typeTab = +el.dataset.v; const sec = $('#pw-types'); if (sec) { sec.outerHTML = typesSection(); const b = $(`#tab-${S.ui.typeTab}`); if (b) b.focus(); SHOT.fill(); thumbs(); } },
   kprFor: el => { S.kpr.lot = el.dataset.id; S.ui.scrollTo = 'pw-kpr'; update(); },
-  kTenor: el => { S.kpr.tenor = +el.dataset.v; $('#kprOut').innerHTML = kprOut(); document.querySelectorAll('[data-act="kTenor"]').forEach(b => { const on = +b.dataset.v === S.kpr.tenor; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); },
+  kTenor: el => { S.kpr.tenor = +el.dataset.v; $('#kprOut').innerHTML = kprOut(); document.querySelectorAll('[data-act="kTenor"]').forEach(b => { const on = +b.dataset.v === S.kpr.tenor; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); thumbs(); },
   view3d: el => { S.ui.view3d[el.dataset.m] = el.dataset.v === '1'; update(); },
   g3rot: el => G3.orbit(+el.dataset.v * Math.PI / 4, 1),
   g3zoom: el => G3.orbit(0, +el.dataset.v),
@@ -2301,6 +2470,9 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Tab' && S.ui.overlay) { const box = $('#ovRoot .drawer, #ovRoot .modal'); if (!box) return; const f = [...box.querySelectorAll('button:not([disabled]),input:not([disabled]),select,textarea,[tabindex="0"]')]; if (!f.length) return; const first = f[0], last = f[f.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } }
 });
 document.addEventListener('pointerover', e => { const t = e.target.closest && e.target.closest('.ac-hit'); if (t) acFocus(t); });
+document.addEventListener('pointerout', e => { const s = e.target.closest && e.target.closest('svg.ac'); if (!s) return; const to = e.relatedTarget; if (to && to.closest && to.closest('svg.ac') === s) return; const h = s.querySelectorAll('.ac-hit')[+s.dataset.hi]; if (h) acFocus(h); });
+let thumbTimer; window.addEventListener('resize', () => { clearTimeout(thumbTimer); thumbTimer = setTimeout(thumbs, 120); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => thumbs());
 document.addEventListener('submit', e => { e.preventDefault(); const f = F[e.target.id]; if (f) f(e.target); });
 document.addEventListener('input', e => {
   const t = e.target;
